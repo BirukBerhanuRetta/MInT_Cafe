@@ -1,5 +1,6 @@
 const express = require('express');
 const { Pool } = require('pg');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 const port = 3001;
@@ -22,7 +23,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 // GET /inventory endpoint to fetch all inventory items
-app.get('/inventor', async (req, res) => {
+app.get('/inventory', async (req, res) => {
     try {
         const client = await pool.connect();
 
@@ -37,7 +38,7 @@ app.get('/inventor', async (req, res) => {
 });
 
 // POST /inventory endpoint to add a new inventory item
-app.post('/inventor', async (req, res) => {
+app.post('/inventory', async (req, res) => {
     const { stock_id, amount, date } = req.body;
         console.log(stock_id, amount, date)
         console.log(req.body)
@@ -57,6 +58,32 @@ app.post('/inventor', async (req, res) => {
         res.status(201).json(newItem);
     } catch (error) {
         console.error('Error adding inventory item:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+//POST specific user for authenthication
+app.post('/users', async (req, res) => {
+    try {
+        const {user_id, hashedpswd} = req.body;
+        console.log(user_id, hashedpswd);
+        const client = await pool.connect();
+
+        const result = await client.query('SELECT hashedpswd FROM Cafe_user  WHERE user_id = $1', [user_id]);
+        const dbPassword = result.rows.map((row) => row.hashedpswd)[0];
+        console.log(dbPassword);
+        client.release();
+        const isMatch = await bcrypt.compare(hashedpswd,dbPassword);
+
+        if (isMatch){
+            res.status(200).json({message: 'Authenthication Successful'});
+
+        }
+        else {
+            res.status(401).json({error: "Authenthication failed"});
+        }
+        //res.json(userdets);
+    } catch (error) {
+        console.error('Error fetching inventory:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
