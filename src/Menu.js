@@ -11,7 +11,7 @@ function Menu() {
 
     const fetchMenu = async () => {
         try {
-            const response = await axios.get('/Menu'); // Replace with your API endpoint for fetching the menu
+            const response = await axios.get(' http://localhost:3001/Menu'); // Replace with your API endpoint for fetching the menu
             setMenu(response.data);
         } catch (error) {
             console.error('Error fetching menu:', error);
@@ -24,7 +24,7 @@ function Menu() {
 
     const handleOrderSubmit = async () => {
         try {
-            await axios.post('/order', selectedItems); // Replace with your API endpoint for submitting orders
+            await axios.post(' http://localhost:3001/order', selectedItems); // Replace with your API endpoint for submitting orders
             console.log('Order submitted successfully');
             setSelectedItems([]);
         } catch (error) {
@@ -38,7 +38,7 @@ function Menu() {
             <ul>
                 {menu.map((item) => (
                     <li key={item.id}>
-                        {item.name} - ${item.price}
+                        {item.food_id} - ${item.price}
                         <button onClick={() => handleItemSelect(item)}>Add to Order</button>
                     </li>
                 ))}
@@ -46,7 +46,7 @@ function Menu() {
             <h4>Selected Items:</h4>
             <ul>
                 {selectedItems.map((item) => (
-                    <li key={item.id}>{item.name}</li>
+                    <li key={item.price}>{item.food_id}</li>
                 ))}
             </ul>
             <button onClick={handleOrderSubmit} disabled={selectedItems.length === 0}>
