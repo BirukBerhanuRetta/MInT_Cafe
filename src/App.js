@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-d
 import Login from './Login';
 import isAuthenticatd from './Login';
 import Inventory from './Inventory';
+import Menu from "./Menu";
 
 function App() {
     return (
@@ -12,6 +13,7 @@ function App() {
             <Router>
                 <Switch>
                     <Route exact path="/login" component={Login} />
+                    <Route exact path="/Menu" component={Menu} />
                     <PrivateRoute exact path="/inventory" component={Inventory} />
                     <Redirect to="/login" />
                 </Switch>
