@@ -5,7 +5,7 @@ import Login from './Login';
 import isAuthenticatd from './Login';
 import Inventory from './Inventory';
 import Menu from "./Menu";
-import Orders from "./Orders";
+import Reports from "./Orders";
 
 function App() {
     return (
@@ -16,7 +16,7 @@ function App() {
                     <Route exact path="/login" component={Login} />
                     <Route exact path="/Menu" component={Menu} />
                     <PrivateRoute exact path="/inventory" component={Inventory} />
-                    <Route exact path="/Orders" component={Orders}/>
+                    <Route exact path="/Reports" component={Orders}/>
                     <Redirect to="/login" />
                 </Switch>
             </Router>

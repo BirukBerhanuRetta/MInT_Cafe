@@ -25,7 +25,7 @@ function Orders() {
         }
     };
     return (
-    <div className="view-inventory">
+    <div className="view-orders">
         <h3>View Orders of the day</h3>
         <table>
             <thead>
