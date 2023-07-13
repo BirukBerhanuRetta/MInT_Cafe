@@ -68,14 +68,16 @@ app.post('/users', async (req, res) => {
         console.log(user_id, hashedpswd);
         const client = await pool.connect();
 
-        const result = await client.query('SELECT hashedpswd FROM Cafe_user  WHERE user_id = $1', [user_id]);
+        const result = await client.query('SELECT hashedpswd, user_type_id FROM Cafe_user  WHERE user_id = $1', [user_id]);
         const dbPassword = result.rows.map((row) => row.hashedpswd)[0];
+        const userType = result.rows.map((row)=>row.user_type_id)[0];
+        console.log(userType);
         console.log(dbPassword);
         client.release();
         const isMatch = await bcrypt.compare(hashedpswd,dbPassword);
 
         if (isMatch){
-            res.status(200).json({message: 'Authenthication Successful'});
+            res.status(200).json({userType: userType});
 
         }
         else {
@@ -103,28 +105,69 @@ app.get('/Menu', async (req, res) => {
 
 //Submitting orders
 app.post('/order', async (req, res) => {
-    const { stock_id, amount, date } = req.body;
-    console.log(stock_id, amount, date)
-    console.log(req.body)
-    if (!stock_id || !amount) {
-        res.status(400).json({ error: 'Product name and quantity are required' });
+    const { user_id, items, num_items } = req.body;
+    console.log(user_id, items, num_items)
+    var totalCost =0;
+    //console.log(req.body)
+    if (!user_id || !items || !num_items) {
+        res.status(400).json({ error: 'user id or item missing' });
         return;
+    }
+    for (let i =0; i<items.length; i++) {
+        const {food_id, price, date}= items[i];
+        totalCost += price;
     }
 
     try {
         const client = await pool.connect();
-        const result = await client.query(
-            'INSERT INTO stock (stock_id, amount, date) VALUES ($1, $2, $3) RETURNING *',
-            [stock_id, amount, date]
-        );
-        const newItem = result.rows[0];
+        const result = await  client.query('SELECT credit_amount FROM Cafe_user  WHERE user_id = $1', [user_id])
+        const clientCredit = result.rows.map((row) => row.credit_amount)[0];
+        console.log(clientCredit);
+        if (totalCost> clientCredit){
+            res.status(400).json({error:'Insufficient funds'});
+            return;
+        }
         client.release();
-        res.status(201).json(newItem);
+
+    } catch (error) {
+        console.error('Error getting user credit:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+
+    try {
+        const client = await pool.connect();
+        for (let i =0; i<items.length; i++) {
+            const {food_id, price}= items[i];
+            const date = new Date();
+            const result = await client.query(
+                'INSERT INTO orders (order_no,user_id, food_id, date, bill,qty, complete) VALUES (001, $1,  $2, $3, $4, 1, false) RETURNING *',
+                [user_id, food_id, date, price]
+            );
+        }
+        //const newItem = result.rows[0];
+        client.release();
+        res.status(201).json(totalCost);
     } catch (error) {
         console.error('Error adding inventory item:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+app.get('/orders', async (req, res) => {
+    try {
+        const date = new Date();
+        const client = await pool.connect();
+
+        const result = await client.query('SELECT order_no, user_id, food_id FROM orders WHERE date = $1',[date]);
+        const inventory = result.rows;
+        client.release();
+        res.json(inventory);
+    } catch (error) {
+        console.error('Error fetching inventory:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 // Start the server
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

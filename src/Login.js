@@ -9,7 +9,7 @@ function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const history = useHistory();
-
+    const [userType2, setUserType2] = useState()
     const handleUsernameChange = (event) => {
         setUsername(event.target.value);
     };
@@ -30,14 +30,31 @@ function Login() {
             //use this for when signing up
             const hshdpswd = await bcrypt.hash(password,saltRounds)
 
-            await axios.post(' http://localhost:3001/users', {
+            const response = await axios.post(' http://localhost:3001/users', {
                 user_id: username,
                 hashedpswd: password
             });
-            //console.log(hshdpswd);
+
             setUsername('');
             setPassword('');
+            const {userType} =response.data;
+            //setUserType2(userType);
+            console.log(userType);
             isAuthenticatd= true;
+
+            const data ={
+                user_id:username
+            }
+            const queryString = new URLSearchParams(data).toString();
+
+
+            if (userType == 1){
+                window.location.replace(`http://localhost:3000/Menu?${queryString}`);
+            }
+            else if (userType == 2){
+                window.location.replace("http://localhost:3000/Inventory");
+            }
+
             //console.log(isAuthenticatd);
 
             //history.push('/inventory')
@@ -62,7 +79,8 @@ function Login() {
         //history.push('/inventory');
     };
     if (isAuthenticatd){
-        return <Redirect to="/Inventory"/>;
+        //console.log(userType);
+        //return <Redirect to="/Inventory"/>;
     }
     return (
         <div className="login-form">

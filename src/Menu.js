@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import {useLocation} from "react-router-dom";
 
 function Menu() {
     const [menu, setMenu] = useState([]);
     const [selectedItems, setSelectedItems] = useState([]);
+    const location = useLocation();
 
     useEffect(() => {
         fetchMenu();
@@ -23,9 +25,21 @@ function Menu() {
     };
 
     const handleOrderSubmit = async () => {
+
+        const queryparams = new URLSearchParams(location.search);
+        const user_id = queryparams.get('user_id');
+
         try {
-            await axios.post(' http://localhost:3001/order', selectedItems); // Replace with your API endpoint for submitting orders
-            console.log('Order submitted successfully');
+            const orderData = {
+                user_id: user_id,
+                items: selectedItems,
+                num_items: selectedItems.length
+            }
+            const result = await axios.post(' http://localhost:3001/order', orderData); // Replace with your API endpoint for submitting orders
+            if (result.status == 201) {
+                window.location.replace("http://localhost:3000/Login");
+            }
+            console.log(result);
             setSelectedItems([]);
         } catch (error) {
             console.error('Error submitting order:', error);
