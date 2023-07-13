@@ -54,6 +54,10 @@ function Login() {
             else if (userType == 2){
                 window.location.replace("http://localhost:3000/Inventory");
             }
+            else if (userType == 3){
+                window.location.replace("http://localhost:3000/Orders");
+            }
+
 
             //console.log(isAuthenticatd);
 
