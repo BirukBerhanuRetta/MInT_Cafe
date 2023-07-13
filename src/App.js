@@ -16,7 +16,7 @@ function App() {
                     <Route exact path="/login" component={Login} />
                     <Route exact path="/Menu" component={Menu} />
                     <PrivateRoute exact path="/inventory" component={Inventory} />
-                    <Route exact path="/Orders" component={Orders}/>
+                    <Route exact path="/Orders" component={Orders} />
                     <Redirect to="/login" />
                 </Switch>
             </Router>
